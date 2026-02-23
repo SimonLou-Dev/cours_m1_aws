@@ -1,5 +1,5 @@
 resource "aws_launch_template" "nginx_lt" {
-  name          = "nginx-launch-template"
+  name_prefix   = "nginx-lt-"
   image_id      = data.aws_ami.amazon_linux.id
   instance_type = "t3.micro"
   key_name      = aws_key_pair.deployer.key_name
@@ -19,23 +19,16 @@ resource "aws_launch_template" "nginx_lt" {
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name = "nginx-cluster"
+      Name = "nginx-node"
     }
   }
-
-  depends_on = [ 
-    data.aws_ami.amazon_linux,
-    aws_key_pair.deployer,
-    aws_security_group.web_sg
-   ]
 }
 
 resource "aws_autoscaling_group" "nginx_asg" {
-  name_prefix        = "nginx-cluster-"
-  desired_capacity   = 3
-  min_size           = 2
-  max_size           = 5
-
+  name_prefix         = "nginx-cluster-"
+  desired_capacity    = 2
+  min_size            = 2
+  max_size            = 5
   vpc_zone_identifier = aws_subnet.private_subnet[*].id
 
   launch_template {
@@ -44,7 +37,7 @@ resource "aws_autoscaling_group" "nginx_asg" {
   }
 
   health_check_type         = "ELB"
-  health_check_grace_period = 300
+  health_check_grace_period = 90
 
   instance_refresh {
     strategy = "Rolling"
@@ -56,15 +49,4 @@ resource "aws_autoscaling_group" "nginx_asg" {
   lifecycle {
     create_before_destroy = true
   }
-
-  tag {
-    key                 = "Name"
-    value               = "nginx-node"
-    propagate_at_launch = true
-  }
-
-  depends_on = [
-    aws_subnet.private_subnet,
-    aws_launch_template.nginx_lt
-   ]
 }

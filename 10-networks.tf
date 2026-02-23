@@ -1,3 +1,9 @@
+##############################
+#                            #
+#            VPC             #
+#                            #
+##############################
+
 resource "aws_vpc" "kevin_vpc" {
   cidr_block = var.cidr_block
 
@@ -5,6 +11,13 @@ resource "aws_vpc" "kevin_vpc" {
     Name = "Kevin VPC"
   }
 }
+
+##############################
+#                            #
+#           Public           #
+#           subnet           #
+#                            #
+##############################
 
 resource "aws_subnet" "public_subnet" {
   count             = length(var.public_subnet)
@@ -17,16 +30,12 @@ resource "aws_subnet" "public_subnet" {
   }
 }
 
-resource "aws_subnet" "private_subnet" {
-  count             = length(var.private_subnet)
-  vpc_id            = aws_vpc.kevin_vpc.id
-  cidr_block        = var.private_subnet[count.index]
-  availability_zone = data.aws_availability_zones.azs.names[count.index]
-
-  tags = {
-    Name = "Private-Subnet ${count.index + 1}"
-  }
-}
+##############################
+#                            #
+#           Public           #
+#          routing           #
+#                            #
+##############################
 
 resource "aws_internet_gateway" "gateway" {
   vpc_id = aws_vpc.kevin_vpc.id
@@ -55,6 +64,32 @@ resource "aws_route_table_association" "public_subnet_association" {
   subnet_id      = aws_subnet.public_subnet[count.index].id
   route_table_id = aws_route_table.public_route_table.id
 }
+
+##############################
+#                            #
+#          Private           #
+#           subnet           #
+#                            #
+##############################
+
+resource "aws_subnet" "private_subnet" {
+  count             = length(var.private_subnet)
+  vpc_id            = aws_vpc.kevin_vpc.id
+  cidr_block        = var.private_subnet[count.index]
+  availability_zone = data.aws_availability_zones.azs.names[count.index]
+
+  tags = {
+    Name = "Private-Subnet ${count.index + 1}"
+  }
+}
+
+##############################
+#                            #
+#          private           #
+#          routing           #
+#                            #
+##############################
+
 
 resource "aws_route_table" "private_route_table" {
   vpc_id = aws_vpc.kevin_vpc.id

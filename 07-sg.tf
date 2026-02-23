@@ -1,3 +1,9 @@
+##############################
+#                            #
+#        Loadbalancer        #
+#                            #
+##############################
+
 resource "aws_security_group" "lb_sg" {
   name        = "lb-sg"
   description = "HTTP public vers le load balancer"
@@ -22,6 +28,12 @@ resource "aws_security_group" "lb_sg" {
   }
 }
 
+##############################
+#                            #
+#        BASTION SSH         #
+#                            #
+##############################
+
 resource "aws_security_group" "bastion_sg" {
   name        = "bastion-sg"
   description = "SSH public vers le bastion"
@@ -45,6 +57,12 @@ resource "aws_security_group" "bastion_sg" {
     Name = "bastion-sg"
   }
 }
+
+##############################
+#                            #
+#            WEB             #
+#                            #
+##############################
 
 resource "aws_security_group" "web_sg" {
   name        = "web-sg"

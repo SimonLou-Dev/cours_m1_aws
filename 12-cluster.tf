@@ -1,3 +1,9 @@
+##############################
+#                            #
+#         template           #
+#                            #
+##############################
+
 resource "aws_launch_template" "nginx_lt" {
   name_prefix   = "nginx-lt-"
   image_id      = data.aws_ami.amazon_linux.id
@@ -23,6 +29,12 @@ resource "aws_launch_template" "nginx_lt" {
     }
   }
 }
+
+##############################
+#                            #
+#        autoscaling         #
+#                            #
+##############################
 
 resource "aws_autoscaling_group" "nginx_asg" {
   name_prefix         = "nginx-cluster-"

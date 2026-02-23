@@ -6,6 +6,12 @@ resource "aws_lb" "nginx_lb" {
   subnets            = aws_subnet.public_subnet[*].id
 }
 
+##############################
+#                            #
+#           tagets           #
+#                            #
+##############################
+
 resource "aws_lb_target_group" "nginx_tg" {
   name     = "nginx-tg"
   port     = 80
@@ -20,6 +26,12 @@ resource "aws_lb_target_group" "nginx_tg" {
   }
 }
 
+
+##############################
+#                            #
+#         listerners         #
+#                            #
+##############################
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.nginx_lb.arn
   port              = 80
@@ -31,11 +43,15 @@ resource "aws_lb_listener" "http" {
   }
 }
 
+##############################
+#                            #
+#        attachement         #
+#                            #
+##############################
+
 resource "aws_autoscaling_attachment" "nginx_asg_attachment" {
   autoscaling_group_name = aws_autoscaling_group.nginx_asg.id
   lb_target_group_arn    = aws_lb_target_group.nginx_tg.arn
 }
 
-output "lb_dns" {
-  value = "http://${aws_lb.nginx_lb.dns_name}"
-}
+

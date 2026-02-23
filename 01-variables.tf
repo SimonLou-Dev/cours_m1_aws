@@ -1,18 +1,39 @@
+
+##############################
+#                            #
+#   Configuration provider   #
+#                            #
+##############################
+
+variable "region" {
+  description = "Region AWS"
+}
+
+##############################
+#                            #
+#         networking         #
+#                            #
+##############################
+
 variable "cidr_block" {
-  default = "10.0.0.0/16"
+  description = "VPC CIDR block"
 }
 
 variable "private_subnet" {
   type        = list(string)
-  default     = ["10.0.11.0/24", "10.0.12.0/24", "10.0.13.0/24"]
   description = "private subnet"
 }
 
 variable "public_subnet" {
   type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   description = "Public subnet"
 }
+
+##############################
+#                            #
+#          instance          #
+#                            #
+##############################
 
 variable "ssh_public_key" {
   description = "Contenu de la clé publique SSH (ex: cat ~/.ssh/id_rsa.pub)"

@@ -20,8 +20,7 @@ variable "public_subnet" {
     description = "Public subnet"
 }
 
-variable "azs" {
-    type = list(string)
-    description = "Availability Zones"
-    default = [ "eu-west-3a", "eu-west-3b", "eu-west-3c" ] 
+variable "ssh_public_key" {
+  description = "Contenu de la clé publique SSH (ex: cat ~/.ssh/id_rsa.pub)"
+  type        = string
 }

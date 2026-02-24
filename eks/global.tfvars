@@ -27,3 +27,10 @@ public_subnet = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 
 ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF2wznKtUWNBnbStppdAXsJSdZXrTqtrMp5sDQwPRQpR simsi@laptop-sim"
 
+##############################
+#                            #
+#           access           #
+#                            #
+##############################
+
+admin_iam_arns = [ "arn:aws:iam::498533444626:user/sbidet" ]

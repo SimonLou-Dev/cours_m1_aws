@@ -39,3 +39,15 @@ variable "ssh_public_key" {
   description = "Contenu de la clé publique SSH (ex: cat ~/.ssh/id_rsa.pub)"
   type        = string
 }
+
+##############################
+#                            #
+#           access           #
+#                            #
+##############################
+
+variable "admin_iam_arns" {
+  description = "Liste des ARN IAM ayant accès admin au cluster (ex: arn:aws:iam::123456789:user/mon-user)"
+  type        = list(string)
+  default     = []
+}

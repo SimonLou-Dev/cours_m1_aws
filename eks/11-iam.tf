@@ -1,3 +1,9 @@
+##############################
+#                            #
+#            role            #
+#                            #
+##############################
+
 resource "aws_iam_role" "cluster" {
   name = "eks-byt-kevin"
   assume_role_policy = jsonencode({
@@ -17,12 +23,6 @@ resource "aws_iam_role" "cluster" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "cluster_AmazonEKSClusterPolicy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.cluster.name
-}
-
-# Node Group IAM Role
 resource "aws_iam_role" "node" {
   name = "eks-node-bye-kevin"
 
@@ -44,21 +44,31 @@ resource "aws_iam_role" "node" {
   }
 }
 
-# Node group worker node policy
-resource "aws_iam_role_policy_attachment" "node_AmazonEKSWorkerNodePolicy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+##############################
+#                            #
+#        attachement         #
+#                            #
+##############################
+
+
+
+# Pour que le CP puisse gérer le noeud
+resource "aws_iam_role_policy_attachment" "role_attachement" {
+  for_each = toset([
+    "AmazonEC2ContainerRegistryReadOnly",
+    "AmazonEKS_CNI_Policy",
+    "AmazonEKSClusterPolicy",
+    "AmazonEKSLocalOutpostClusterPolicy",
+    "AmazonEKSServicePolicy",
+    "AmazonEKSVPCResourceController",
+    "AmazonEKSWorkerNodePolicy",
+    "CloudWatchAgentServerPolicy",
+    "ElasticLoadBalancingReadOnly"
+  ])
+
+  policy_arn = "arn:aws:iam::aws:policy/${item}"
   role       = aws_iam_role.node.name
 }
 
-# CNI plugin policy
-resource "aws_iam_role_policy_attachment" "node_AmazonEKS_CNI_Policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = aws_iam_role.node.name
-}
 
-# Container registry read-only
-resource "aws_iam_role_policy_attachment" "node_AmazonEC2ContainerRegistryReadOnly" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  role       = aws_iam_role.node.name
-}
 

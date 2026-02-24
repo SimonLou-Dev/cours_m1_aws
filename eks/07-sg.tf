@@ -7,7 +7,7 @@ resource "aws_security_group" "node_group" {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = [aws_security_group.bastion.id]
+    security_groups = [aws_security_group.bastion_sg.id]
     description     = "SSH from bastion"
   }
 
@@ -32,10 +32,17 @@ resource "aws_security_group" "node_group" {
   }
 }
 
-resource "aws_security_group" "bastion" {
-  name        = "eks-bastion-bye-kevin"
-  description = "Bastion security group"
+resource "aws_security_group" "bastion_sg" {
+  name        = "bastion-sg"
+  description = "SSH public vers le bastion"
   vpc_id      = module.eks.vpc_id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   egress {
     from_port   = 0

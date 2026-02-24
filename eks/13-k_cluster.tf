@@ -26,6 +26,38 @@ resource "aws_eks_cluster" "bye_kevin" {
   ]
 }
 
+##############################
+#                            #
+#           addons           #
+#                            #
+##############################
+
+resource "aws_eks_addon" "addons_before" {
+  for_each = toset([
+    "vpc-cni",
+    "kube-proxy",
+  ])
+  cluster_name = aws_eks_cluster.bye_kevin.name
+  addon_name   = each.key
+}
+
+resource "aws_eks_addon" "addons_after" {
+  for_each = toset([
+    "coredns",
+  ])
+  cluster_name = aws_eks_cluster.bye_kevin.name
+  addon_name   = each.key
+
+  depends_on = [ aws_eks_node_group.bye_kevin_group ]
+}
+
+
+##############################
+#                            #
+#         node group         #
+#                            #
+##############################
+
 resource "aws_eks_node_group" "bye_kevin_group" {
   cluster_name    = aws_eks_cluster.bye_kevin.name
   node_group_name = "bye-kevin-group"
@@ -34,9 +66,9 @@ resource "aws_eks_node_group" "bye_kevin_group" {
   subnet_ids = module.eks.private_subnet_ids
 
   scaling_config {
-    desired_size = 2
-    max_size     = 3
-    min_size     = 1
+    desired_size = 4
+    max_size     = 6
+    min_size     = 3
   }
 
   launch_template {
@@ -54,6 +86,7 @@ resource "aws_eks_node_group" "bye_kevin_group" {
 
   depends_on = [
     aws_iam_role_policy_attachment.role_attachement,
+    aws_eks_addon.addons_before
   ]
 }
 

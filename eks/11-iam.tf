@@ -66,7 +66,7 @@ resource "aws_iam_role_policy_attachment" "role_attachement" {
     "ElasticLoadBalancingReadOnly"
   ])
 
-  policy_arn = "arn:aws:iam::aws:policy/${item}"
+  policy_arn = "arn:aws:iam::aws:policy/${each.key}"
   role       = aws_iam_role.node.name
 }
 

@@ -32,3 +32,15 @@ variable "public_subnet" {
   type        = list(string)
   description = "Public subnet"
 }
+
+##############################
+#                            #
+#       EKS (optionnel)      #
+#                            #
+##############################
+
+variable "cluster_name" {
+  description = "Nom du cluster EKS. Si renseigné, ajoute les tags kubernetes.io sur les subnets."
+  type        = string
+  default     = ""
+}

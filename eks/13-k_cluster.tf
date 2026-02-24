@@ -5,7 +5,7 @@ resource "aws_eks_cluster" "bye_kevin" {
     authentication_mode = "API"
   }
 
-  role_arn = aws_iam_role.cluster.arn
+  role_arn = aws_iam_role.bisous_kevin.arn
   version  = "1.35"
 
   vpc_config {
@@ -32,25 +32,16 @@ resource "aws_eks_cluster" "bye_kevin" {
 #                            #
 ##############################
 
-resource "aws_eks_addon" "addons_before" {
+resource "aws_eks_addon" "addons" {
   for_each = toset([
     "vpc-cni",
     "kube-proxy",
-  ])
-  cluster_name = aws_eks_cluster.bye_kevin.name
-  addon_name   = each.key
-}
-
-resource "aws_eks_addon" "addons_after" {
-  for_each = toset([
     "coredns",
+    "metrics-server"
   ])
   cluster_name = aws_eks_cluster.bye_kevin.name
   addon_name   = each.key
-
-  depends_on = [ aws_eks_node_group.bye_kevin_group ]
 }
-
 
 ##############################
 #                            #
@@ -61,14 +52,14 @@ resource "aws_eks_addon" "addons_after" {
 resource "aws_eks_node_group" "bye_kevin_group" {
   cluster_name    = aws_eks_cluster.bye_kevin.name
   node_group_name = "bye-kevin-group"
-  node_role_arn   = aws_iam_role.node.arn
+  node_role_arn   = aws_iam_role.bisous_kevin.arn
 
   subnet_ids = module.eks.private_subnet_ids
 
   scaling_config {
-    desired_size = 4
-    max_size     = 6
-    min_size     = 3
+    desired_size = 2
+    max_size     = 3
+    min_size     = 1
   }
 
   launch_template {
@@ -86,7 +77,6 @@ resource "aws_eks_node_group" "bye_kevin_group" {
 
   depends_on = [
     aws_iam_role_policy_attachment.role_attachement,
-    aws_eks_addon.addons_before
   ]
 }
 
@@ -125,9 +115,13 @@ resource "aws_eks_access_policy_association" "admin" {
 ##############################
 
 resource "aws_launch_template" "bye_kevin_template" {
-  name_prefix = "bye-kevin-"
+  name_prefix   = "bye-kevin-"
+  instance_type = "t3.micro"
 
-  vpc_security_group_ids = [aws_security_group.node_group.id]
+  vpc_security_group_ids = [
+    aws_security_group.node_group.id,
+    aws_eks_cluster.bye_kevin.vpc_config[0].cluster_security_group_id,
+  ]
 
   tag_specifications {
     resource_type = "instance"

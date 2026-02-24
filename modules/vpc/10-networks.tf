@@ -4,8 +4,25 @@
 #                            #
 ##############################
 
+locals {
+  private_subnet_eks_tags = var.cluster_name != "" ? {
+    "kubernetes.io/role/internal-elb"           = "1"
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+  } : {}
+
+  public_subnet_eks_tags = var.cluster_name != "" ? {
+    "kubernetes.io/role/elb"                    = "1"
+    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
+  } : {}
+}
+
 resource "aws_vpc" "kevin_vpc" {
   cidr_block = var.cidr_block
+
+  # Requis par EKS : sans ça les nodes ne peuvent pas résoudre l'endpoint
+  # du cluster et restent en boucle "recovering resources" dans l'ASG.
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 
   tags = {
     Name = var.name
@@ -25,9 +42,10 @@ resource "aws_subnet" "public_subnet" {
   cidr_block        = var.public_subnet[count.index]
   availability_zone = data.aws_availability_zones.azs.names[count.index]
 
-  tags = {
-    Name = "${var.name}-public-${data.aws_availability_zones.azs.names[count.index]}"
-  }
+  tags = merge(
+    { Name = "${var.name}-public-${data.aws_availability_zones.azs.names[count.index]}" },
+    local.public_subnet_eks_tags,
+  )
 }
 
 ##############################
@@ -78,9 +96,10 @@ resource "aws_subnet" "private_subnet" {
   cidr_block        = var.private_subnet[count.index]
   availability_zone = data.aws_availability_zones.azs.names[count.index]
 
-  tags = {
-    Name = "${var.name}-private-${data.aws_availability_zones.azs.names[count.index]}"
-  }
+  tags = merge(
+    { Name = "${var.name}-private-${data.aws_availability_zones.azs.names[count.index]}" },
+    local.private_subnet_eks_tags,
+  )
 }
 
 ##############################

@@ -1,11 +1,11 @@
 module "eks" {
   source = "../modules/vpc"
 
-  name="eks-vpc"
+  name         = "eks-vpc"
+  cluster_name = "bye-kevin"
 
-  cidr_block = var.cidr_block
-  public_subnet = var.public_subnet
+  cidr_block     = var.cidr_block
+  public_subnet  = var.public_subnet
   private_subnet = var.private_subnet
-  region = var.region
-  
+  region         = var.region
 }

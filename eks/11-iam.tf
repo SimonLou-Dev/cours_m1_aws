@@ -4,26 +4,7 @@
 #                            #
 ##############################
 
-resource "aws_iam_role" "cluster" {
-  name = "eks-byt-kevin"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "sts:AssumeRole",
-          "sts:TagSession"
-        ]
-        Effect = "Allow"
-        Principal = {
-          Service = "eks.amazonaws.com"
-        }
-      },
-    ]
-  })
-}
-
-resource "aws_iam_role" "node" {
+resource "aws_iam_role" "bisous_kevin" {
   name = "eks-node-bye-kevin"
 
   assume_role_policy = jsonencode({
@@ -33,7 +14,11 @@ resource "aws_iam_role" "node" {
         Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
-          Service = "ec2.amazonaws.com"
+          Service =[
+            "ec2.amazonaws.com",
+            "eks-nodegroup.amazonaws.com",
+            "eks.amazonaws.com"
+          ]
         }
       },
     ]
@@ -55,19 +40,21 @@ resource "aws_iam_role" "node" {
 # Pour que le CP puisse gérer le noeud
 resource "aws_iam_role_policy_attachment" "role_attachement" {
   for_each = toset([
-    "AmazonEC2ContainerRegistryReadOnly",
-    "AmazonEKS_CNI_Policy",
+    # --- Cluster ---
     "AmazonEKSClusterPolicy",
-    "AmazonEKSLocalOutpostClusterPolicy",
-    "AmazonEKSServicePolicy",
     "AmazonEKSVPCResourceController",
+    "AmazonEKSServicePolicy",
+    "AmazonEKSLocalOutpostClusterPolicy",
+    # --- Nodes ---
     "AmazonEKSWorkerNodePolicy",
+    "AmazonEKS_CNI_Policy",
+    "AmazonEC2ContainerRegistryReadOnly",
     "CloudWatchAgentServerPolicy",
-    "ElasticLoadBalancingReadOnly"
+    "ElasticLoadBalancingReadOnly",
   ])
 
   policy_arn = "arn:aws:iam::aws:policy/${each.key}"
-  role       = aws_iam_role.node.name
+  role       = aws_iam_role.bisous_kevin.name
 }
 
 

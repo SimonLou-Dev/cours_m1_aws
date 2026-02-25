@@ -41,30 +41,90 @@ resource "aws_eks_addon" "addon_coredns" {
     computeType = "fargate"
   })
 
-  depends_on = [ aws_eks_cluster.bye_kevin ]
+  depends_on = [aws_eks_node_group.bye_kevin_group]
 }
 
 resource "aws_eks_addon" "addon_metrics_server" {
   cluster_name = aws_eks_cluster.bye_kevin.name
   addon_name   = "metrics-server"
 
-  depends_on = [ aws_eks_cluster.bye_kevin ]
+  depends_on = [aws_eks_node_group.bye_kevin_group]
 }
 
 resource "aws_eks_addon" "addon_vpc_cni" {
   cluster_name = aws_eks_cluster.bye_kevin.name
   addon_name   = "vpc-cni"
 
-  depends_on = [ aws_eks_cluster.bye_kevin ]
+  depends_on = [ aws_eks_node_group.bye_kevin_group]
 }
 
 resource "aws_eks_addon" "addon_kube_proxy" {
   cluster_name = aws_eks_cluster.bye_kevin.name
   addon_name   = "kube-proxy"
 
-  depends_on = [ aws_eks_cluster.bye_kevin ]
+  depends_on = [ aws_eks_node_group.bye_kevin_group ]
 }
 
+##############################
+#                            #
+#         node group         #
+#                            #
+##############################
+
+resource "aws_eks_node_group" "bye_kevin_group" {
+  cluster_name    = aws_eks_cluster.bye_kevin.name
+  node_group_name = "bye-kevin-group-standard"
+  node_role_arn   = aws_iam_role.bisous_kevin.arn
+
+  subnet_ids = module.eks.private_subnet_ids
+
+  scaling_config {
+    desired_size = 5
+    max_size     = 6
+    min_size     = 3
+  }
+
+  launch_template {
+    id      = aws_launch_template.bye_kevin_template.id
+    version = aws_launch_template.bye_kevin_template.latest_version
+  }
+
+  update_config {
+    max_unavailable = 1
+  }
+
+  tags = {
+    Name = "eks-ng-bye-kevin-standard"
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.role_attachement,
+  ]
+}
+
+resource "aws_launch_template" "bye_kevin_template" {
+  instance_type = "t3.micro"
+
+  vpc_security_group_ids = [
+    aws_security_group.fargate_sg.id,
+    aws_eks_cluster.bye_kevin.vpc_config[0].cluster_security_group_id,
+  ]
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      Name = "eks-node-bye-kevin-standard"
+    }
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
+    Name = "eks-launch-template"
+  }
+}
 
 
 ##############################
@@ -73,33 +133,10 @@ resource "aws_eks_addon" "addon_kube_proxy" {
 #                            #
 ##############################
 
-resource "aws_eks_fargate_profile" "bye_kevin_fargate" {
-  cluster_name           = aws_eks_cluster.bye_kevin.name
-  fargate_profile_name   = "bye-kevin-fargate"
-  pod_execution_role_arn = aws_iam_role.bisous_kevin.arn
-  subnet_ids             = module.eks.private_subnet_ids
-
-  selector {
-    namespace = "default"
-  }
-
-  selector {
-    namespace = "kube-system"
-  }
-
-  tags = {
-    Name = "eks-fargate-profile"
-  }
-
-  depends_on = [
-    aws_iam_role_policy_attachment.role_attachement,
-  ]
-}
-
 resource "aws_eks_fargate_profile" "bye_kevin_fargate_nginx" {
   cluster_name           = aws_eks_cluster.bye_kevin.name
   fargate_profile_name   = "bye-kevin-fargate-nginx"
-  pod_execution_role_arn = aws_iam_role.bisous_kevin.arn
+  pod_execution_role_arn = aws_iam_role.fargate_pod_execution.arn
   subnet_ids             = module.eks.private_subnet_ids
 
   selector {
@@ -111,7 +148,7 @@ resource "aws_eks_fargate_profile" "bye_kevin_fargate_nginx" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.role_attachement,
+    aws_iam_role_policy_attachment.fargate_pod_execution,
   ]
 }
 
